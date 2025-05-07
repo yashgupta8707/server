@@ -16,20 +16,20 @@ app.use(express.json());
 
 // MongoDB connection
 if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI, { 
-    useNewUrlParser: true, 
-    useUnifiedTopology: true 
-  })
+  mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err));
+  .catch(err => console.error('MongoDB connection error:', err));
 }
-
 // Routes
 app.use('/api', apiRoutes);
+app.use('/api/quotations', require('./routes/quotationRoutes'));
+app.use('/api/components', require('./routes/componentRoutes'));
 
 app.get('/', (req, res) => {
   res.send('TITAN Gaming Systems API');
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

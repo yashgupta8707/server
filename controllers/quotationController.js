@@ -1,7 +1,101 @@
 // File: controllers/quotationController.js
 // Controller for quotation operations
 const Quotation = require('../models/quotationModel');
-
+// Get quotation statistics
+exports.getStats = async (req, res) => {
+    try {
+      // Implement statistics logic here
+      const count = await Quotation.countDocuments();
+      const statusCounts = await Quotation.aggregate([
+        { $group: { _id: "$status", count: { $sum: 1 } } }
+      ]);
+      
+      res.json({
+        total: count,
+        byStatus: statusCounts
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Get a single quotation
+  exports.getQuotation = async (req, res) => {
+    try {
+      const quotation = await Quotation.findById(req.params.id);
+      if (!quotation) {
+        return res.status(404).json({ message: 'Quotation not found' });
+      }
+      res.json(quotation);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Create a new quotation
+  exports.createQuotation = async (req, res) => {
+    try {
+      const newQuotation = new Quotation(req.body);
+      const savedQuotation = await newQuotation.save();
+      res.status(201).json(savedQuotation);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+  
+  // Update an existing quotation
+  exports.updateQuotation = async (req, res) => {
+    try {
+      const updatedQuotation = await Quotation.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+      );
+      if (!updatedQuotation) {
+        return res.status(404).json({ message: 'Quotation not found' });
+      }
+      res.json(updatedQuotation);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+  
+  // Delete a quotation
+  exports.deleteQuotation = async (req, res) => {
+    try {
+      const deletedQuotation = await Quotation.findByIdAndDelete(req.params.id);
+      if (!deletedQuotation) {
+        return res.status(404).json({ message: 'Quotation not found' });
+      }
+      res.json({ message: 'Quotation deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Update quotation status
+  exports.updateStatus = async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ message: 'Status is required' });
+      }
+      
+      const updatedQuotation = await Quotation.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true, runValidators: true }
+      );
+      
+      if (!updatedQuotation) {
+        return res.status(404).json({ message: 'Quotation not found' });
+      }
+      
+      res.json(updatedQuotation);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
 // Get all quotations
 exports.getQuotations = async (req, res) => {
   try {

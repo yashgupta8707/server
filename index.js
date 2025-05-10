@@ -1,36 +1,46 @@
-// server/index.js - Updated server file
+// server.js - Main server file
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const dotenv = require('dotenv');
-const apiRoutes = require('./routes/api');
+const authRoutes = require('./routes/auth.routes');
+const partyRoutes = require('./routes/party.routes');
+const quotationRoutes = require('./routes/quotation.routes');
+const { verifyToken } = require('./middlewares/auth.middleware');
 
+// Load environment variables
 dotenv.config();
 
+// Create Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection
-if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-}
+// Database connection
+mongoose.connect(process.env.MONGO_URI, {})
+  .then(() => {
+    console.log('Connected to database!');
+  })
+  .catch((error) => {
+    console.log('Database connection failed!');
+    console.error(error);
+  });
+
 // Routes
-app.use('/api', apiRoutes);
-app.use('/api/quotations', require('./routes/quotationRoutes'));
-app.use('/api/components', require('./routes/componentRoutes'));
+app.use('/api/auth', authRoutes);
+app.use('/api/parties', verifyToken, partyRoutes);
+app.use('/api/quotations', verifyToken, quotationRoutes);
 
+// Basic route for testing
 app.get('/', (req, res) => {
-  res.send('TITAN Gaming Systems API');
+  res.json({ message: 'Welcome to EmpressPC Quotation API' });
 });
 
-
-
+// Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -1,69 +1,101 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const quotationSchema = new mongoose.Schema(
-  {
-    quotationNumber: {
+const QuotationSchema = new Schema({
+  quotationNumber: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  },
+  customer: {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Party',
+      required: true
+    },
+    name: {
       type: String,
-      required: true,
-      unique: true,
+      required: true
     },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-    customer: {
-      id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Party',
-      },
-      name: String,
-      phone: String,
-      address: String,
-      state: String,
-    },
-    businessDetails: {
-      companyName: { type: String, required: true },
-      address: String,
-      phone: String,
-      email: String,
-      gstin: String,
-      state: String,
-    },
-    items: [{
+    phone: String,
+    address: String,
+    state: String
+  },
+  businessDetails: {
+    companyName: String,
+    address: String,
+    phone: String,
+    email: String,
+    gstin: String,
+    state: String
+  },
+  items: [
+    {
       id: String,
       category: String,
       component: String,
-      quantity: Number,
-      unit: String,
+      quantity: {
+        type: Number,
+        default: 1
+      },
+      unit: {
+        type: String,
+        default: 'Pcs'
+      },
       warranty: String,
       basePrice: Number,
       customPrice: Number,
       purchasePrice: Number,
-      isCustomPrice: Boolean,
+      isCustomPrice: {
+        type: Boolean,
+        default: false
+      },
       hsn: String,
-      gst: Number,
-    }],
-    totals: {
-      subtotal: Number,
-      totalGst: Number,
-      grandTotal: Number,
-      totalProfit: Number,
-      hsnTotals: mongoose.Schema.Types.Mixed,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
+      gst: {
+        type: Number,
+        default: 18
+      }
+    }
+  ],
+  totals: {
+    subTotal: Number,
+    totalGST: Number,
+    grandTotal: Number,
+    totalProfit: Number,
+    profitMargin: Number,
+    gstAmounts: Object
   },
-  {
-    timestamps: {
-      createdAt: 'created_at',
-      updatedAt: 'updated_at',
-    },
+  status: {
+    type: String,
+    enum: ['draft', 'sent', 'accepted', 'rejected', 'invoiced'],
+    default: 'draft'
+  },
+  originalQuotationId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Quotation',
+    default: null
+  },
+  revisionNumber: {
+    type: Number,
+    default: null
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: null
   }
-);
+});
 
-const Quotation = mongoose.model('Quotation', quotationSchema);
-
-module.exports = Quotation;
+module.exports = mongoose.model('Quotation', QuotationSchema);
